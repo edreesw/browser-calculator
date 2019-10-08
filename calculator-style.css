@@ -34,6 +34,9 @@ header {
 }
 
 #display {
+	display: flex; 
+	flex-direction: column;
+
 	overflow: hidden;
 	text-overflow: ellipsis; 
 	font-size: 48px; 
@@ -44,8 +47,7 @@ header {
 	margin: 0;
 	padding: 0; 
 }
-/* TODO: set permanent sizes to top/main displays;
-*/
+
 #display * {
 	overflow: hidden;
 	text-overflow: ellipsis; 
@@ -55,7 +57,11 @@ header {
 	padding: 0; 
 }
 #top-display {
+	height: 30%; 
 	font-size: 24px; 
+}
+#main-display {
+	height: 70%; 
 }
 #one {
 	grid-area: one; 
