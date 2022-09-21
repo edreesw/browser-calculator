@@ -1,2 +1,2 @@
 # browser-calculator
-working calculator gui to display on a browser
+working javascript calculator

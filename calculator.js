@@ -1,49 +1,45 @@
 let opDisplayVal = ""; //top display for the ongoing operation/values 
 let displayVal = ""; 
-let numList = []; 
-let opList = []; 
+
+
+let curNum = null; 
+let curOp = null; 
+let prevCalc = null; 
+
 
 
 function operate(op, a, b) {
 	//take string, return int
 	a=parseInt(a); 
 	b=parseInt(b); 
-	if(op==="+") {
-		return a+b; 
-	}
-	if(op==="-") {
-		return a-b; 
-	}
-	if(op==="x") {
-		return a*b; 
-	}
-	if(op==="/") {
-		return a/b; 
+	switch(op) {
+		case "+" : 
+			return a+b;
+			break;  
+		case "-" : 
+			return a-b; 
+			break; 
+		case "x" : 
+			return a*b; 
+			break; 
+		case "/" : 
+			return a/b; 
+			break; 
 	}
 }
 
 function displayNumBtnPress(e) {
 	let display = document.querySelector("#main-display"); 
-	if(displayVal==="0") {
-		displayVal=""; 
-	}
+
 	displayVal = displayVal.concat(this.textContent)
 	display.textContent = displayVal; 
+
+	curNum = displayVal; 
 }
 
-function clearDisplay(e) {
-	let display = document.querySelector("#main-display"); 
-	let topDisplay = document.querySelector("#top-display"); 
-	opDisplayVal = " "; 
-	displayVal = "0"; 
-	display.textContent = displayVal;  
-	topDisplay.textContent = opDisplayVal; 
-	opList = []; 
-	numList = []; 
-}
 
 function divByZeroCheck() {
-	if(opList[opList.length-1]==="/" && displayVal==="0") {
+	if(curOp === "/" && displayVal === "0") {
 		clearDisplay(); 
 		document.querySelector("#main-display").textContent ="Cannot div by zero!"; 
 		return true; 
@@ -51,10 +47,10 @@ function divByZeroCheck() {
 	return false; 
 }
 
-function queueOperator(e) {
-	//TODO: clear display back to zero, add operator and current number to the op/num lists to be evaluated later
+function queueOperator(e) { 
 	if(displayVal==="") {
 		displayVal = document.querySelector("#main-display").textContent; //use whats currently displayed (so that you can use the result of a calculation for another calculaton) 
+		curNum = displayVal; 
 	}
 
 	if(divByZeroCheck()) {
@@ -64,45 +60,65 @@ function queueOperator(e) {
 	let topDisplay = document.querySelector("#top-display"); 
 	opDisplayVal = opDisplayVal.concat(displayVal + this.textContent);
 	topDisplay.textContent = opDisplayVal; 
-	numList.push(displayVal); 
-	opList.push(this.textContent); 
+	
+	//set curOp to the current op, if it's the first time an operator is being used then set the prevCalc to the current display num. (this is so that the next time an operator is entered, you can calculate using the current num and the previously selected num)
+	if(curOp !== null) { 
+		calculate();
+	} else {
+		prevCalc = curNum;  
+	}
+	curOp = this.textContent;
 
-	//let mainDisplay = document.querySelector("#main-display"); 
 	displayVal = ""; 
-	//mainDisplay.textContent = displayVal;  
+
+
 }
 
 function calculate() {
 	let curValue = document.querySelector("#main-display").textContent; //take whatever's in the display as the current/final value
-	numList.push(curValue); 
-	//console.log(opList); 
-	//console.log(numList); 
+	 
 	if(divByZeroCheck()) { 
 		return; 
 	}
-	if(opList.length===0) {
-		numList = []; 
-		return; 
-	}
-	//TODO: loop through nums/operators, check for errors/div by zero (do this check in op func), etc, return final calculation
-	//reminder: use .shift() on arrays to get/remove first element 
 
-	let answer = numList.shift(); 
-	while(opList.length!==0 && numList.length!==0) {
-		answer = operate(opList.shift(), answer, numList.shift()); 
+	if(prevCalc === null) {
+		return; //do nothing if precalc is null, since this is likely only triggered when pressing equals key before any operators are used... 
 	}
 
+	let answer = operate(curOp, prevCalc, curNum); 
+
+	prevCalc = answer; 
+	displayVal = ""; 
+	
 	let topDisplay = document.querySelector("#top-display"); 
-	opDisplayVal = opDisplayVal.concat(curValue);
-	topDisplay.textContent = ""; //opDisplayVal; 
+	
 	let mainDisplay = document.querySelector("#main-display"); 
 	mainDisplay.textContent = answer; 
-	opDisplayVal = ""; 
-	displayVal = ""; 
-	numList = []; 
-	opList = []; 
-	//console.log(answer); 
+ 	
 	return answer; 
+}
+
+function reset() {
+	displayVal = ""; 
+	opDisplayVal = ""; 
+	curNum = null; 
+	curOp = null; 
+	prevCalc = null; 
+}
+
+function clearDisplay(e) {
+	let display = document.querySelector("#main-display"); 
+	let topDisplay = document.querySelector("#top-display"); 
+	reset(); 
+	display.textContent = "0";//displayVal;  
+	topDisplay.textContent = "";
+}
+
+//resets variables and only the top display, leaving main display alone.
+function equalsReset(e) {
+	let topDisplay = document.querySelector("#top-display");
+	topDisplay.textContent = ""; 
+	reset(); 
 }
 
 let numBtns = document.querySelectorAll(".num-btn"); 
@@ -120,3 +136,4 @@ clearBtn.addEventListener("click", clearDisplay);
 
 let equalsBtn = document.querySelector("#equals-btn"); 
 equalsBtn.addEventListener("click", calculate); 
+equalsBtn.addEventListener("click", equalsReset); 
